@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Municipal - Control de Extintores</title>
-    <!-- Librería para leer QR con la cámara -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body {
@@ -39,10 +38,16 @@
             font-size: 16px;
             cursor: pointer;
             margin-bottom: 10px;
-            font-weight: bold;
         }
         .btn-sync {
             background-color: #17a2b8;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
             margin-bottom: 20px;
         }
         #reader { width: 100%; display: none; margin-bottom: 10px; }
@@ -89,10 +94,8 @@
 <body>
     <div class="container">
         <h1>Gestión de Extintores</h1>
-
-        <!-- Botón para descargar datos de Google Sheets -->
-        <button class="btn-qr btn-sync" onclick="sincronizarGoogleSheets()">🔄 Sincronizar Base de Datos (Google Sheets)</button>
         
+        <button class="btn-sync" onclick="sincronizarGoogleSheets()">🔄 Sincronizar Base de Datos (Google Sheets)</button>
         <div id="toastMensaje" class="toast"></div>
 
         <!-- MÓDULO DE BÚSQUEDA -->
@@ -102,8 +105,8 @@
             
             <p style="text-align: center; margin: 10px 0;">O ingresar N° Chasis manualmente:</p>
             
-            <input type="text" id="buscarDni" placeholder="Ej: 81174">
-            <button class="action-btn" style="background-color: #6c757d;" onclick="buscarPorDni()">🔍 Buscar Extintor</button>
+            <input type="text" id="buscarDni" placeholder="Ej: 81174 o AGC-4d5459">
+            <button class="action-btn" style="background-color: #6c757d;" onclick="buscarPorDni()">Buscar Extintor</button>
         </div>
 
         <!-- FORMULARIO DE DATOS -->
@@ -129,7 +132,7 @@
             <label for="ultimaRecarga">Fecha de Última Recarga:</label>
             <input type="date" id="ultimaRecarga" required>
 
-            <button type="button" class="action-btn" onclick="registrarYEvaluar()">💾 Guardar Registro y Evaluar</button>
+            <button type="button" class="action-btn" onclick="registrarYEvaluar()">Guardar Registro y Evaluar</button>
         </form>
 
         <!-- RESULTADO DEL DIAGNÓSTICO -->
@@ -139,20 +142,20 @@
     </div>
 
     <script>
-        // --- SISTEMA DE MENSAJES ---
+        // --- UTILIDADES DE INTERFAZ ---
         function mostrarMensaje(mensaje, color = '#333') {
             const toast = document.getElementById('toastMensaje');
             toast.innerText = mensaje;
             toast.style.backgroundColor = color;
             toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+            setTimeout(() => { toast.style.display = 'none'; }, 5000);
         }
 
         // --- GESTIÓN DE BASE DE DATOS LOCAL ---
         function obtenerBaseDeDatos() {
             let db = localStorage.getItem('extintoresDB');
             if (!db) {
-                db = {};
+                db = { "81174": { tipo: "HCFC", fabricacion: 2008, ultimaPH: 2023, ultimaRecarga: "2026-08-01" } };
                 localStorage.setItem('extintoresDB', JSON.stringify(db));
             }
             return JSON.parse(localStorage.getItem('extintoresDB'));
@@ -166,7 +169,6 @@
 
         // --- SINCRONIZACIÓN CON GOOGLE SHEETS ---
         async function sincronizarGoogleSheets() {
-            // ¡IMPORTANTE! Reemplaza el texto de abajo con tu enlace de Google Sheets publicado como CSV
             const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSwZg3UdZkIYErHpe6jgpjHJ9Kd_tGUKs5hYHQDMmakLTT6HBe4CC88gqWkr_ydw0GH2eOG-Eh-b0a7/pub?output=csv"; 
             
             mostrarMensaje("Conectando con Google Sheets...", "#17a2b8");
@@ -175,29 +177,31 @@
                 const respuesta = await fetch(urlCSV);
                 const datosCSV = await respuesta.text();
 
-                const lineas = datosCSV.split(/\r?\n/); // Divide por saltos de línea
+                const lineas = datosCSV.split('\n');
                 let db = {};
 
                 for(let i = 1; i < lineas.length; i++) {
-                    if(!lineas[i].trim()) continue;
+                    if(!lineas[i].trim()) continue; 
                     
                     const columnas = lineas[i].split(',');
                     const dni = columnas[0].trim();
                     
-                    db[dni] = {
-                        tipo: columnas[1].trim(),
-                        fabricacion: parseInt(columnas[2].trim()),
-                        ultimaPH: parseInt(columnas[3].trim()),
-                        ultimaRecarga: columnas[4].trim()
-                    };
+                    if(dni) {
+                        db[dni] = {
+                            tipo: columnas[1] ? columnas[1].trim() : "ABC",
+                            fabricacion: parseInt(columnas[2] ? columnas[2].trim() : 0),
+                            ultimaPH: parseInt(columnas[3] ? columnas[3].trim() : 0),
+                            ultimaRecarga: columnas[4] ? columnas[4].trim() : ""
+                        };
+                    }
                 }
 
                 localStorage.setItem('extintoresDB', JSON.stringify(db));
-                mostrarMensaje("✓ Base de datos actualizada con éxito desde Excel.", "#28a745");
+                mostrarMensaje("✓ Base de datos sincronizada correctamente.", "#28a745");
 
             } catch (error) {
-                console.error(error);
-                mostrarMensaje("⚠ Error al conectar con la planilla.", "#cc0000");
+                console.error("Error en la sincronización:", error);
+                mostrarMensaje("⚠ Error al conectar con la planilla. Revisa tu conexión.", "#cc0000");
             }
         }
 
@@ -207,16 +211,33 @@
             document.getElementById('reader').style.display = 'block';
             html5QrcodeScanner = new Html5Qrcode("reader");
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
             html5QrcodeScanner.start(
                 { facingMode: "environment" },
                 config,
                 (textoDecodificado) => {
                     html5QrcodeScanner.stop();
                     document.getElementById('reader').style.display = 'none';
-                    document.getElementById('buscarDni').value = textoDecodificado;
-                    buscarPorDni();
+
+                    if (textoDecodificado.includes("agcontrol.gob.ar")) {
+                        mostrarMensaje("✓ QR Oficial de AGC detectado. Extrayendo identificador...", "#17a2b8");
+                        try {
+                            const urlParams = new URLSearchParams(textoDecodificado.split('?')[1]);
+                            const tarjetaId = urlParams.get('p_tarjeta');
+                            const idCorto = "AGC-" + tarjetaId.substring(0, 6);
+                            
+                            document.getElementById('buscarDni').value = idCorto;
+                            alert("Para la versión final con Backend, el sistema leerá la web del gobierno. Por ahora, buscaremos el ID: " + idCorto + " en nuestra planilla.");
+                            buscarPorDni();
+                        } catch (e) {
+                            document.getElementById('buscarDni').value = textoDecodificado;
+                        }
+                    } else {
+                        document.getElementById('buscarDni').value = textoDecodificado;
+                        buscarPorDni();
+                    }
                 },
-                (error) => { /* ignorar errores silenciosos */ }
+                (error) => { /* ignorar errores silenciosos de lectura */ }
             ).catch(err => alert("Error de cámara. Asegúrese de dar permisos."));
         }
 
@@ -234,7 +255,7 @@
             form.classList.remove('oculto');
             document.getElementById('dniExtintor').value = dni;
 
-            if (db[dni]) {
+            if (db[dni] && db[dni].fabricacion) {
                 document.getElementById('tipo').value = db[dni].tipo;
                 document.getElementById('fabricacion').value = db[dni].fabricacion;
                 document.getElementById('ultimaPH').value = db[dni].ultimaPH;
@@ -244,11 +265,11 @@
                 document.getElementById('fabricacion').value = "";
                 document.getElementById('ultimaPH').value = "";
                 document.getElementById('ultimaRecarga').value = "";
-                mostrarMensaje("⚠ Extintor no registrado. Complete los datos.", "#856404");
+                mostrarMensaje("⚠ Extintor no registrado. Complete los datos para guardarlo.", "#856404");
             }
         }
 
-        // --- LÓGICA DE CÁLCULO ---
+        // --- LÓGICA DE REGISTRO Y CÁLCULO ---
         function registrarYEvaluar() {
             const dni = document.getElementById('dniExtintor').value;
             const tipo = document.getElementById('tipo').value;
@@ -262,7 +283,7 @@
             }
 
             guardarExtintor(dni, { tipo, fabricacion, ultimaPH, ultimaRecarga: ultimaRecargaInput });
-            mostrarMensaje("💾 Registro guardado exitosamente.", "#28a745");
+            mostrarMensaje("💾 Registro guardado/actualizado exitosamente.", "#28a745");
 
             const fechaRecarga = new Date(ultimaRecargaInput);
             const hoy = new Date();
@@ -272,20 +293,17 @@
             let claseAlerta = "alerta-verde";
             let acciones = [];
 
-            // 1. Descarte a los 20 años
             const edadExtintor = anioActual - fabricacion;
             if (edadExtintor >= 20) {
                 estado = "DESCARTE DEFINITIVO";
                 claseAlerta = "alerta-roja";
                 acciones.push(`Superó los 20 años de vida útil (${edadExtintor} años de antigüedad). Dar de baja.`);
             } else {
-                // 2. Prueba hidráulica cada 5 años
                 if ((anioActual - ultimaPH) >= 5) {
                     estado = "PRUEBA HIDRÁULICA VENCIDA";
                     claseAlerta = "alerta-roja";
                     acciones.push("Se requieren pruebas de presión (pasaron 5 años o más).");
                 }
-                // 3. Recarga Anual
                 const unAnioEnMilisegundos = 1000 * 60 * 60 * 24 * 365;
                 if ((hoy - fechaRecarga) >= unAnioEnMilisegundos) {
                     if (estado === "Operativo") {
@@ -297,7 +315,7 @@
             }
 
             if (acciones.length === 0) {
-                acciones.push(`Equipo en regla. Apto hasta el ${anioActual + 1} o hasta sus 20 años (Año ${fabricacion + 20}).`);
+                acciones.push(`Equipo en regla. Apto hasta el ${anioActual + 1} o hasta sus 20 años.`);
             }
 
             const panel = document.getElementById('resultadoPanel');
