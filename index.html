@@ -17,105 +17,94 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 400px;
+            max-width: 450px;
             margin: 0 auto;
         }
-        h1, h2 { text-align: center; color: #333; }
+        h1, h2, h3 { text-align: center; color: #333; margin-top: 0;}
         
+        /* Botones y Búsqueda */
         .search-box {
             background: #e9ecef;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        .btn-qr {
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        .btn-sync {
-            background-color: #17a2b8;
-            color: white;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
+        .btn-qr { background-color: #007bff; color: white; padding: 12px; width: 100%; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 10px; font-weight: bold;}
+        .btn-sync { background-color: #17a2b8; color: white; padding: 10px; width: 100%; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-bottom: 20px; }
+        .action-btn { background-color: #6c757d; color: white; padding: 15px; width: 100%; border: none; border-radius: 4px; font-size: 16px; margin-top: 10px; cursor: pointer; font-weight: bold;}
+        .btn-guardar { background-color: #28a745; margin-top: 20px;}
+        
+        input, select { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px;}
+        label { font-weight: bold; font-size: 14px;}
+        
+        .oculto { display: none !important; }
         #reader { width: 100%; display: none; margin-bottom: 10px; }
-
-        label { display: block; margin-top: 10px; font-weight: bold; }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button.action-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .oculto { display: none; }
-        #diagnostico { padding: 15px; border-radius: 4px; font-weight: bold; margin-top: 15px;}
         
-        .alerta-roja { background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000;}
-        .alerta-amarilla { background-color: #fff3cd; color: #856404; border: 1px solid #856404;}
-        .alerta-verde { background-color: #d4edda; color: #155724; border: 1px solid #155724;}
+        /* Tarjetas de Diagnóstico */
+        .tarjeta-resultado { padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; border: 2px solid transparent;}
+        .estado-titulo { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;}
         
-        .toast {
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            display: none;
-        }
+        .estado-verde { background-color: #d4edda; border-color: #28a745; color: #155724;}
+        .estado-amarillo { background-color: #fff3cd; border-color: #ffc107; color: #856404;}
+        .estado-rojo { background-color: #f8d7da; border-color: #dc3545; color: #721c24;}
+        
+        .detalles-lista { text-align: left; background: rgba(255,255,255,0.6); padding: 10px 20px; border-radius: 4px; margin-top: 15px; font-size: 15px;}
+        
+        /* Panel de Proveedores */
+        .panel-proveedores { margin-top: 15px; padding: 15px; border: 1px solid #007bff; border-radius: 8px; background: #e9f5ff; text-align: left;}
+        .panel-proveedores h4 { margin: 0 0 10px 0; color: #0056b3;}
+        .panel-proveedores ul { margin: 0; padding-left: 20px; font-size: 14px;}
+        
+        .toast { background-color: #333; color: #fff; text-align: center; padding: 10px; border-radius: 4px; margin-bottom: 15px; display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Gestión de Extintores</h1>
+        <h1>Control de Extintores</h1>
         
-        <button class="btn-sync" onclick="sincronizarGoogleSheets()">🔄 Sincronizar Base de Datos (Google Sheets)</button>
+        <!-- Botón que llama a tu Apps Script -->
+        <button class="btn-sync" onclick="sincronizarGoogleSheets()">🔄 1. Cargar datos desde Google Sheets</button>
         <div id="toastMensaje" class="toast"></div>
 
-        <!-- MÓDULO DE BÚSQUEDA -->
+        <!-- MÓDULO DE BÚSQUEDA RÁPIDA -->
         <div class="search-box">
-            <button class="btn-qr" id="btnEscanear" onclick="iniciarEscaneo()">📷 Escanear Código QR</button>
+            <button class="btn-qr" id="btnEscanear" onclick="iniciarEscaneo()">📷 Escanear QR</button>
             <div id="reader"></div>
             
-            <p style="text-align: center; margin: 10px 0;">O ingresar N° Chasis manualmente:</p>
-            
-            <input type="text" id="buscarDni" placeholder="Ej: 81174 o AGC-4d5459">
-            <button class="action-btn" style="background-color: #6c757d;" onclick="buscarPorDni()">Buscar Extintor</button>
+            <p style="text-align: center; margin: 10px 0; font-size: 14px;">O ingresar N° Chasis manualmente:</p>
+            <input type="text" id="buscarDni" placeholder="Ej: 81174" style="text-align: center; font-weight: bold; font-size: 18px;">
+            <button class="action-btn" onclick="buscarPorDni()">🔍 Buscar Estado</button>
         </div>
 
-        <!-- FORMULARIO DE DATOS -->
-        <form id="extintorForm" class="oculto">
-            <h2>Datos del Equipo</h2>
-            <label for="dniExtintor">N° de Chasis / DNI:</label>
+        <!-- RESULTADO DEL DIAGNÓSTICO -->
+        <div id="resultadoPanel" class="oculto">
+            <div id="tarjetaEstado" class="tarjeta-resultado">
+                <div id="estadoTitulo" class="estado-titulo"></div>
+                <div id="estadoDetalles" class="detalles-lista"></div>
+            </div>
+            
+            <!-- Sugerencia de Renovación -->
+            <div id="panelRenovacion" class="panel-proveedores oculto">
+                <h4>📍 Proveedores para Renovación</h4>
+                <p style="font-size: 13px; margin-bottom: 5px;">Contactos registrados para mantenimiento:</p>
+                <ul>
+                    <li><strong>SUYAI Extintores S.R.L.</strong><br>Tel: 5263-3529 / 4582-5867<br><small>Servicio de mantenimiento y recarga.</small></li>
+                    <li><strong>Matafuegos Donny S.R.L.</strong><br><small>Fabricante original (Reemplazos).</small></li>
+                </ul>
+            </div>
+            
+            <button class="action-btn" style="margin-top: 20px; background-color: #6c757d;" onclick="limpiarPantalla()">🔙 Buscar otro extintor</button>
+        </div>
+
+        <!-- FORMULARIO DE DATOS MANUALES -->
+        <form id="extintorForm" class="oculto" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #ccc;">
+            <h3>⚠ Extintor No Registrado</h3>
+            <p style="font-size: 14px; text-align: center;">El equipo no está en la base. Ingresá los datos de la chapa:</p>
+            
+            <label for="dniExtintor">N° de Chasis:</label>
             <input type="text" id="dniExtintor" readonly style="background-color: #e9ecef;">
 
-            <label for="tipo">Tipo de Extintor:</label>
+            <label for="tipo">Tipo:</label>
             <select id="tipo">
                 <option value="ABC">Polvo ABC</option>
                 <option value="CO2">CO2</option>
@@ -126,207 +115,207 @@
             <label for="fabricacion">Año de Fabricación:</label>
             <input type="number" id="fabricacion" min="1980" max="2026" required>
 
-            <label for="ultimaPH">Año de Última Prueba Hidráulica:</label>
+            <label for="ultimaPH">Año Última Prueba Hidráulica:</label>
             <input type="number" id="ultimaPH" min="1980" max="2026">
 
-            <label for="ultimaRecarga">Fecha de Última Recarga:</label>
+            <label for="ultimaRecarga">Fecha Última Recarga:</label>
             <input type="date" id="ultimaRecarga" required>
 
-            <button type="button" class="action-btn" onclick="registrarYEvaluar()">Guardar Registro y Evaluar</button>
+            <button type="button" class="action-btn btn-guardar" onclick="registrarYEvaluar()">Guardar y Mostrar Estado</button>
         </form>
 
-        <!-- RESULTADO DEL DIAGNÓSTICO -->
-        <div id="resultadoPanel" class="oculto">
-            <div id="diagnostico"></div>
-        </div>
     </div>
 
     <script>
-        // --- UTILIDADES DE INTERFAZ ---
+        // --- UTILIDADES ---
         function mostrarMensaje(mensaje, color = '#333') {
             const toast = document.getElementById('toastMensaje');
             toast.innerText = mensaje;
             toast.style.backgroundColor = color;
             toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 5000);
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
         }
 
-        // --- GESTIÓN DE BASE DE DATOS LOCAL ---
         function obtenerBaseDeDatos() {
-            let db = localStorage.getItem('extintoresDB');
-            if (!db) {
-                db = { "81174": { tipo: "HCFC", fabricacion: 2008, ultimaPH: 2023, ultimaRecarga: "2026-08-01" } };
-                localStorage.setItem('extintoresDB', JSON.stringify(db));
-            }
-            return JSON.parse(localStorage.getItem('extintoresDB'));
+            return JSON.parse(localStorage.getItem('extintoresDB')) || {};
         }
 
-        function guardarExtintor(dni, datos) {
-            let db = obtenerBaseDeDatos();
-            db[dni] = datos;
-            localStorage.setItem('extintoresDB', JSON.stringify(db));
-        }
-
-        // --- SINCRONIZACIÓN CON GOOGLE SHEETS ---
+        // --- SINCRONIZACIÓN EN TIEMPO REAL CON APPS SCRIPT ---
         async function sincronizarGoogleSheets() {
-            const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSwZg3UdZkIYErHpe6jgpjHJ9Kd_tGUKs5hYHQDMmakLTT6HBe4CC88gqWkr_ydw0GH2eOG-Eh-b0a7/pub?output=csv"; 
+            // Tu enlace real de Apps Script
+            const urlAPI = "https://script.google.com/macros/s/AKfycbwHQIGnRqrwVaWukXmQ7qXrxXN0S2fFO0lLFnHULkw_2J1BY4DT7YRKf2DsxvlCSSG8LQ/exec"; 
             
-            mostrarMensaje("Conectando con Google Sheets...", "#17a2b8");
+            mostrarMensaje("Conectando con la base de datos en vivo...", "#17a2b8");
 
             try {
-                const respuesta = await fetch(urlCSV);
-                const datosCSV = await respuesta.text();
-
-                const lineas = datosCSV.split('\n');
-                let db = {};
-
-                for(let i = 1; i < lineas.length; i++) {
-                    if(!lineas[i].trim()) continue; 
-                    
-                    const columnas = lineas[i].split(',');
-                    const dni = columnas[0].trim();
-                    
-                    if(dni) {
-                        db[dni] = {
-                            tipo: columnas[1] ? columnas[1].trim() : "ABC",
-                            fabricacion: parseInt(columnas[2] ? columnas[2].trim() : 0),
-                            ultimaPH: parseInt(columnas[3] ? columnas[3].trim() : 0),
-                            ultimaRecarga: columnas[4] ? columnas[4].trim() : ""
-                        };
-                    }
-                }
-
+                const respuesta = await fetch(urlAPI);
+                const db = await respuesta.json(); // Leemos el JSON directo desde Google
+                
                 localStorage.setItem('extintoresDB', JSON.stringify(db));
-                mostrarMensaje("✓ Base de datos sincronizada correctamente.", "#28a745");
-
+                mostrarMensaje("✓ Base de datos sincronizada en tiempo real.", "#28a745");
+                
             } catch (error) {
-                console.error("Error en la sincronización:", error);
-                mostrarMensaje("⚠ Error al conectar con la planilla. Revisa tu conexión.", "#cc0000");
+                console.error("Error:", error);
+                mostrarMensaje("⚠ Error de conexión. Verificá el enlace de Apps Script.", "#cc0000");
             }
         }
 
-        // --- LÓGICA DEL ESCÁNER QR ---
+        // --- LÓGICA DE ESCÁNER (Simula Scraping de AGC) ---
         let html5QrcodeScanner;
         function iniciarEscaneo() {
             document.getElementById('reader').style.display = 'block';
             html5QrcodeScanner = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
             
             html5QrcodeScanner.start(
                 { facingMode: "environment" },
-                config,
-                (textoDecodificado) => {
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (texto) => {
                     html5QrcodeScanner.stop();
                     document.getElementById('reader').style.display = 'none';
 
-                    if (textoDecodificado.includes("agcontrol.gob.ar")) {
-                        mostrarMensaje("✓ QR Oficial de AGC detectado. Extrayendo identificador...", "#17a2b8");
+                    if (texto.includes("agcontrol.gob.ar")) {
                         try {
-                            const urlParams = new URLSearchParams(textoDecodificado.split('?')[1]);
+                            const urlParams = new URLSearchParams(texto.split('?')[1]);
                             const tarjetaId = urlParams.get('p_tarjeta');
                             const idCorto = "AGC-" + tarjetaId.substring(0, 6);
-                            
                             document.getElementById('buscarDni').value = idCorto;
-                            alert("Para la versión final con Backend, el sistema leerá la web del gobierno. Por ahora, buscaremos el ID: " + idCorto + " en nuestra planilla.");
                             buscarPorDni();
                         } catch (e) {
-                            document.getElementById('buscarDni').value = textoDecodificado;
+                            document.getElementById('buscarDni').value = texto;
+                            buscarPorDni();
                         }
                     } else {
-                        document.getElementById('buscarDni').value = textoDecodificado;
+                        document.getElementById('buscarDni').value = texto;
                         buscarPorDni();
                     }
                 },
-                (error) => { /* ignorar errores silenciosos de lectura */ }
-            ).catch(err => alert("Error de cámara. Asegúrese de dar permisos."));
+                (error) => {}
+            ).catch(err => alert("Error de cámara. Asegúrate de dar permisos."));
         }
 
-        // --- LÓGICA DE BÚSQUEDA ---
+        function limpiarPantalla() {
+            document.getElementById('buscarDni').value = "";
+            document.getElementById('resultadoPanel').classList.add('oculto');
+            document.getElementById('extintorForm').classList.add('oculto');
+            document.getElementById('panelRenovacion').classList.add('oculto');
+            document.getElementById('buscarDni').focus();
+        }
+
+        // --- BÚSQUEDA RÁPIDA ---
         function buscarPorDni() {
             const dni = document.getElementById('buscarDni').value.trim();
             if (!dni) {
-                mostrarMensaje("Por favor ingrese un número.", "#cc0000");
+                mostrarMensaje("Escribí un número de chasis.", "#cc0000");
                 return;
             }
 
             const db = obtenerBaseDeDatos();
-            const form = document.getElementById('extintorForm');
             document.getElementById('resultadoPanel').classList.add('oculto');
-            form.classList.remove('oculto');
-            document.getElementById('dniExtintor').value = dni;
+            document.getElementById('extintorForm').classList.add('oculto');
 
             if (db[dni] && db[dni].fabricacion) {
-                document.getElementById('tipo').value = db[dni].tipo;
-                document.getElementById('fabricacion').value = db[dni].fabricacion;
-                document.getElementById('ultimaPH').value = db[dni].ultimaPH;
-                document.getElementById('ultimaRecarga').value = db[dni].ultimaRecarga;
-                mostrarMensaje("✓ Extintor encontrado en la base de datos.", "#28a745");
+                procesarDiagnostico(db[dni]);
             } else {
+                mostrarMensaje("Equipo no encontrado. Cargar manual.", "#856404");
+                document.getElementById('extintorForm').classList.remove('oculto');
+                document.getElementById('dniExtintor').value = dni;
                 document.getElementById('fabricacion').value = "";
                 document.getElementById('ultimaPH').value = "";
                 document.getElementById('ultimaRecarga').value = "";
-                mostrarMensaje("⚠ Extintor no registrado. Complete los datos para guardarlo.", "#856404");
             }
         }
 
-        // --- LÓGICA DE REGISTRO Y CÁLCULO ---
-        function registrarYEvaluar() {
-            const dni = document.getElementById('dniExtintor').value;
-            const tipo = document.getElementById('tipo').value;
-            const fabricacion = parseInt(document.getElementById('fabricacion').value);
-            const ultimaPH = parseInt(document.getElementById('ultimaPH').value) || fabricacion;
-            const ultimaRecargaInput = document.getElementById('ultimaRecarga').value;
-            
-            if(!fabricacion || !ultimaRecargaInput) {
-                mostrarMensaje("Complete el año de fabricación y la fecha de recarga.", "#cc0000");
-                return;
-            }
-
-            guardarExtintor(dni, { tipo, fabricacion, ultimaPH, ultimaRecarga: ultimaRecargaInput });
-            mostrarMensaje("💾 Registro guardado/actualizado exitosamente.", "#28a745");
-
-            const fechaRecarga = new Date(ultimaRecargaInput);
+        // --- MOTOR DE CÁLCULO DE ESTADOS ---
+        function procesarDiagnostico(datos) {
             const hoy = new Date();
             const anioActual = hoy.getFullYear();
-
-            let estado = "Operativo";
-            let claseAlerta = "alerta-verde";
-            let acciones = [];
-
-            const edadExtintor = anioActual - fabricacion;
-            if (edadExtintor >= 20) {
-                estado = "DESCARTE DEFINITIVO";
-                claseAlerta = "alerta-roja";
-                acciones.push(`Superó los 20 años de vida útil (${edadExtintor} años de antigüedad). Dar de baja.`);
-            } else {
-                if ((anioActual - ultimaPH) >= 5) {
-                    estado = "PRUEBA HIDRÁULICA VENCIDA";
-                    claseAlerta = "alerta-roja";
-                    acciones.push("Se requieren pruebas de presión (pasaron 5 años o más).");
-                }
-                const unAnioEnMilisegundos = 1000 * 60 * 60 * 24 * 365;
-                if ((hoy - fechaRecarga) >= unAnioEnMilisegundos) {
-                    if (estado === "Operativo") {
-                        estado = "RECARGA ANUAL VENCIDA";
-                        claseAlerta = "alerta-amarilla";
-                    }
-                    acciones.push("Necesita vaciado y recarga anual.");
-                }
-            }
-
-            if (acciones.length === 0) {
-                acciones.push(`Equipo en regla. Apto hasta el ${anioActual + 1} o hasta sus 20 años.`);
-            }
-
-            const panel = document.getElementById('resultadoPanel');
-            const divDiagnostico = document.getElementById('diagnostico');
             
-            panel.classList.remove('oculto');
-            divDiagnostico.className = claseAlerta;
-            divDiagnostico.innerHTML = `<h3>Resultado de Inspección</h3>
-                                        <strong>Estado: ${estado}</strong><br><br>
-                                        <strong>Acciones requeridas:</strong>
-                                        <ul>` + acciones.map(a => `<li>${a}</li>`).join('') + `</ul>`;
+            // Reemplazamos los guiones para evitar desfases de zona horaria en JS
+            const fechaRecargaStr = datos.ultimaRecarga.replace(/-/g, '\/');
+            const fechaRecarga = new Date(fechaRecargaStr);
+            
+            let estado = "EN CONDICIONES";
+            let claseTarjeta = "estado-verde";
+            let mostrarProveedores = false;
+            let detalles = [];
+
+            // 1. Vida Útil
+            const edad = anioActual - datos.fabricacion;
+            if (edad >= 20) {
+                estado = "VENCIDO - DESCARTE";
+                claseTarjeta = "estado-rojo";
+                detalles.push(`❌ Superó los 20 años de vida útil (Fabricado en ${datos.fabricacion}).`);
+                mostrarProveedores = true;
+            } else {
+                // 2. Prueba Hidráulica
+                if ((anioActual - datos.ultimaPH) >= 5) {
+                    estado = "VENCIDO - REQUIERE P.H.";
+                    claseTarjeta = "estado-rojo";
+                    detalles.push(`❌ Prueba hidráulica vencida (Última: ${datos.ultimaPH}).`);
+                    mostrarProveedores = true;
+                }
+                
+                // 3. Recarga Anual y "Por Vencer"
+                const diasDesdeRecarga = Math.floor((hoy - fechaRecarga) / (1000 * 60 * 60 * 24));
+                const diasParaVencer = 365 - diasDesdeRecarga;
+
+                if (diasParaVencer <= 0) {
+                    if(estado === "EN CONDICIONES") {
+                        estado = "VENCIDO - RECARGAR";
+                        claseTarjeta = "estado-rojo";
+                    }
+                    detalles.push(`❌ Recarga anual vencida hace ${Math.abs(diasParaVencer)} días.`);
+                    mostrarProveedores = true;
+                } else if (diasParaVencer <= 30) {
+                    if(estado === "EN CONDICIONES") {
+                        estado = "POR VENCER";
+                        claseTarjeta = "estado-amarillo";
+                    }
+                    detalles.push(`⚠️ Atención: La recarga vence en ${diasParaVencer} días.`);
+                    mostrarProveedores = true;
+                } else {
+                    detalles.push(`✅ Recarga vigente (Vence en ${diasParaVencer} días).`);
+                    detalles.push(`✅ Cilindro operativo (Edad: ${edad} años).`);
+                }
+            }
+
+            // Aplicar a la interfaz
+            document.getElementById('resultadoPanel').classList.remove('oculto');
+            
+            const tarjeta = document.getElementById('tarjetaEstado');
+            tarjeta.className = `tarjeta-resultado ${claseTarjeta}`;
+            
+            document.getElementById('estadoTitulo').innerText = estado;
+            document.getElementById('estadoDetalles').innerHTML = `<strong>Tipo:</strong> ${datos.tipo}<br><br>` + detalles.join('<br><br>');
+
+            const panelRenovacion = document.getElementById('panelRenovacion');
+            if (mostrarProveedores) {
+                panelRenovacion.classList.remove('oculto');
+            } else {
+                panelRenovacion.classList.add('oculto');
+            }
+        }
+
+        // --- GUARDAR MANUAL SI NO EXISTÍA ---
+        function registrarYEvaluar() {
+            const dni = document.getElementById('dniExtintor').value;
+            const datos = {
+                tipo: document.getElementById('tipo').value,
+                fabricacion: parseInt(document.getElementById('fabricacion').value),
+                ultimaPH: parseInt(document.getElementById('ultimaPH').value) || parseInt(document.getElementById('fabricacion').value),
+                ultimaRecarga: document.getElementById('ultimaRecarga').value
+            };
+            
+            if(!datos.fabricacion || !datos.ultimaRecarga) {
+                mostrarMensaje("Faltan fechas.", "#cc0000"); return;
+            }
+
+            let db = obtenerBaseDeDatos();
+            db[dni] = datos;
+            localStorage.setItem('extintoresDB', JSON.stringify(db));
+            
+            document.getElementById('extintorForm').classList.add('oculto');
+            procesarDiagnostico(datos);
         }
     </script>
 </body>
