@@ -40,6 +40,108 @@
         .oculto { display: none !important; }
         #reader { width: 100%; display: none; margin-bottom: 10px; }
         
+        /* SECCIÓN DEL PLANO DE EVACUACIÓN Y PESTAÑAS */
+        .plano-seccion {
+            background: #f8f9fa;
+            border: 1px solid #0056b3;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .plano-header {
+            background: #0056b3;
+            color: white;
+            padding: 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .plano-contenido {
+            padding: 10px;
+            text-align: center;
+            background: #fff;
+        }
+        
+        /* Contenedor de Pestañas (Tabs) */
+        .tabs-plano {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 5px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 8px 4px;
+            background-color: #e9ecef;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #495057;
+            transition: all 0.2s;
+        }
+        .tab-btn.activo {
+            background-color: #0056b3;
+            color: white;
+            border-color: #004085;
+        }
+        
+        .plano-visualizador {
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .plano-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            cursor: zoom-in;
+            border: 1px solid #ddd;
+            transition: transform 0.2s;
+        }
+        .plano-img:hover {
+            transform: scale(1.01);
+        }
+        .plano-instruccion {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            margin-bottom: 0;
+        }
+
+        /* MODAL PARA PANTALLA COMPLETA */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-img {
+            max-width: 95%;
+            max-height: 85%;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+        .modal-cerrar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         /* Tarjetas de Diagnóstico */
         .tarjeta-resultado { padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; border: 2px solid transparent;}
         .estado-titulo { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;}
@@ -62,7 +164,36 @@
     <div class="container">
         <h1>Control de Extintores</h1>
         
-        <!-- Botón que llama a tu Apps Script -->
+        <!-- SECCIÓN COLAPSABLE CON 4 IMÁGENES EXTRAÍDAS -->
+        <div class="plano-seccion">
+            <div class="plano-header" onclick="togglePlano()">
+                <span>🗺️ PLANO DE EVACUACIÓN (1° PISO)</span>
+                <span id="planoFlecha">▼</span>
+            </div>
+            <div id="planoContenido" class="plano-contenido oculto">
+                
+                <!-- Selector de Pestañas (Puntos / Extracciones) -->
+                <div class="tabs-plano">
+                    <button class="tab-btn activo" id="btn-ext1" onclick="cambiarExtraccion(1)">Extracción 1</button>
+                    <button class="tab-btn" id="btn-ext2" onclick="cambiarExtraccion(2)">Extracción 2</button>
+                    <button class="tab-btn" id="btn-ext3" onclick="cambiarExtraccion(3)">Extracción 3</button>
+                    <button class="tab-btn" id="btn-ext4" onclick="cambiarExtraccion(4)">Extracción 4</button>
+                </div>
+                
+                <!-- Visualizador de Plano (.jpg) -->
+                <div class="plano-visualizador">
+                    <img id="pantallaPlano" src="extraccion 1.jpg" alt="Plano de Evacuación Escolar" class="plano-img" onclick="abrirModalPlano()">
+                </div>
+                <p class="plano-instruccion">👆 Toca el plano para ampliar a pantalla completa.</p>
+            </div>
+        </div>
+
+        <!-- MODAL DE ZOOM PARA LOS PLANOS (.jpg) -->
+        <div id="modalPlano" class="modal" onclick="cerrarModalPlano()">
+            <span class="modal-cerrar">&times;</span>
+            <img id="imagenGrandePlano" src="extraccion 1.jpg" alt="Plano Ampliado" class="modal-img">
+        </div>
+
         <button class="btn-sync" onclick="sincronizarGoogleSheets()">🔄 1. Cargar datos desde Google Sheets</button>
         <div id="toastMensaje" class="toast"></div>
 
@@ -127,6 +258,51 @@
     </div>
 
     <script>
+        // --- GESTIÓN DE PLANOS Y PESTAÑAS ---
+        let planoActual = 1;
+
+        function togglePlano() {
+            const contenido = document.getElementById('planoContenido');
+            const flecha = document.getElementById('planoFlecha');
+            if (contenido.classList.contains('oculto')) {
+                contenido.classList.remove('oculto');
+                flecha.innerText = '▲';
+            } else {
+                contenido.classList.add('oculto');
+                flecha.innerText = '▼';
+            }
+        }
+
+        function cambiarExtraccion(num) {
+            planoActual = num;
+            
+            // Actualizar interfaz de pestañas
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`btn-ext${i}`);
+                if (i === num) {
+                    btn.classList.add('activo');
+                } else {
+                    btn.classList.remove('activo');
+                }
+            }
+
+            // Cambiar imagen en el contenedor y en el modal gigante a .jpg
+            const visor = document.getElementById('pantallaPlano');
+            const visorModal = document.getElementById('imagenGrandePlano');
+            
+            const nuevaRuta = `extraccion ${num}.jpg`;
+            visor.src = nuevaRuta;
+            visorModal.src = nuevaRuta;
+        }
+
+        // --- PANTALLA COMPLETA MODAL ---
+        function abrirModalPlano() {
+            document.getElementById('modalPlano').style.display = 'flex';
+        }
+        function cerrarModalPlano() {
+            document.getElementById('modalPlano').style.display = 'none';
+        }
+
         // --- UTILIDADES ---
         function mostrarMensaje(mensaje, color = '#333') {
             const toast = document.getElementById('toastMensaje');
@@ -142,14 +318,13 @@
 
         // --- SINCRONIZACIÓN EN TIEMPO REAL CON APPS SCRIPT ---
         async function sincronizarGoogleSheets() {
-            // Tu enlace real de Apps Script
             const urlAPI = "https://script.google.com/macros/s/AKfycbwHQIGnRqrwVaWukXmQ7qXrxXN0S2fFO0lLFnHULkw_2J1BY4DT7YRKf2DsxvlCSSG8LQ/exec"; 
             
             mostrarMensaje("Conectando con la base de datos en vivo...", "#17a2b8");
 
             try {
                 const respuesta = await fetch(urlAPI);
-                const db = await respuesta.json(); // Leemos el JSON directo desde Google
+                const db = await respuesta.json();
                 
                 localStorage.setItem('extintoresDB', JSON.stringify(db));
                 mostrarMensaje("✓ Base de datos sincronizada en tiempo real.", "#28a745");
@@ -190,7 +365,7 @@
                     }
                 },
                 (error) => {}
-            ).catch(err => alert("Error de cámara. Asegúrate de dar permisos."));
+            ).catch(err => alert("Error de cámara. Asegúrese de dar permisos."));
         }
 
         function limpiarPantalla() {
@@ -230,7 +405,6 @@
             const hoy = new Date();
             const anioActual = hoy.getFullYear();
             
-            // Reemplazamos los guiones para evitar desfases de zona horaria en JS
             const fechaRecargaStr = datos.ultimaRecarga.replace(/-/g, '\/');
             const fechaRecarga = new Date(fechaRecargaStr);
             
